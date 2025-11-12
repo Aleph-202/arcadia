@@ -26,7 +26,8 @@ public class MessengerHandler
             ["AUTH"] = HandleAUTH,
             ["RGET"] = HandleRGET,
             ["PSET"] = AcknowledgeRequest,
-            ["PADD"] = AcknowledgeRequest
+            ["PADD"] = AcknowledgeRequest,
+            ["RADD"] = AcknowledgeRequest
         }.ToImmutableDictionary();
     }
 
