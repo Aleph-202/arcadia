@@ -72,12 +72,12 @@ public class FeslHandler
             ["asso/GetAssociations"] = HandleGetAssociations,
             ["pres/PresenceSubscribe"] = HandlePresenceSubscribe,
             ["rank/GetStats"] = HandleGetStats,
+            ["rank/GetRankedStatsForOwners"] = HandleGetRankedStatsForOwners,
             ["rank/GetTopNAndStats"] = HandleGetTopNAndStats,
             ["rank/GetRankedStats"] = HandleGetRankedStats,
             ["rank/UpdateStats"] = HandleUpdateStats,
             ["xmsg/GetMessages"] = HandleGetMessages,
             
-            ["rank/GetRankedStatsForOwners"] = AcknowledgeRequest,
             ["pres/SetPresenceStatus"] = AcknowledgeRequest,
             ["acct/NuGrantEntitlement"] = AcknowledgeRequest,
             ["acct/GetTelemetryToken"] = AcknowledgeRequest,
@@ -244,13 +244,12 @@ public class FeslHandler
 
     private async Task HandleGetStats(Packet request)
     {
-        // TODO: Implement multi-packet responses 
-        var responseData = new Dictionary<string, string>
+    var responseData = new Dictionary<string, string>
         {
             { "TXN", "GetStats" },
         };
 
-        // Override BF1943 minimum player count requirement
+    
         if (request["keys.1"] == "pm_minplayers")
         {
             responseData.Add("stats.[]", "1");
@@ -259,23 +258,51 @@ public class FeslHandler
         }
         else
         {
-            responseData.Add("stats.[]", "0");
+            var keysCount = int.Parse(request["keys.[]"] ?? "0");
+            if (keysCount > 10)
+        {
+            
+            var startPacket = new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, new()
+            {
+                { "TXN", "Start" },
+                { "totalSize", $"{keysCount}" }
+            });
+            await _conn.SendPacket(startPacket);
+
+            for (var i = 0; i < keysCount; i++)
+            {
+                var key = request[$"keys.{i}"];
+                var dataPacket = new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, new()
+                {
+                    { "TXN", "Data" },
+                    { $"stats.{i}.key", key },
+                    { $"stats.{i}.value", "0" } 
+                });
+                await _conn.SendPacket(dataPacket);
+            }
+
+            var endPacket = new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, new()
+            {
+                { "TXN", "End" }
+            });
+            await _conn.SendPacket(endPacket);
+            return;
         }
 
-        // TODO: Add some stats
-        // var keysStr = request.DataDict["keys.[]"] as string ?? string.Empty;
-        // var reqKeys = int.Parse(keysStr, CultureInfo.InvariantCulture);
-        // for (var i = 0; i < reqKeys; i++)
-        // {
-        //     var key = request.DataDict[$"keys.{i}"];
 
-        //     responseData.Add($"stats.{i}.key", key);
-        //     responseData.Add($"stats.{i}.value", 0.0);
-        // }
+            responseData.Add("stats.[]", $"{keysCount}");
+            for (var i = 0; i < keysCount; i++)
+        {
+            var key = request[$"keys.{i}"];
+            responseData.Add($"stats.{i}.key", key);
+            responseData.Add($"stats.{i}.value", "0");
+        }
+    }
 
         var packet = new Packet("rank", FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
         await _conn.SendPacket(packet);
     }
+
 
     private async Task HandleGetRankedStats(Packet request)
     {
@@ -304,32 +331,36 @@ public class FeslHandler
 
     private async Task HandleGetRankedStatsForOwners(Packet request)
     {
-        var statCount = int.Parse(request.DataDict.GetValueOrDefault("keys.[]", "0"));
-        var ownerCount = int.Parse(request.DataDict.GetValueOrDefault("owners.[]", "0"));
+        var ownersCount = int.Parse(request["owners.[]"] ?? "0");
+        var keysCount = int.Parse(request["keys.[]"] ?? "0");
 
         var responseData = new Dictionary<string, string>
-        {
-            { "TXN", request.TXN },
-            { "rankedStats.[]", $"{ownerCount}" },
-            { "rankedStats.0.rankedStats.[]", $"{statCount}" }
-        };
+    {
+        { "TXN", request.TXN },
+        { "rankedStats.[]", $"{ownersCount}" }
+    };
 
-        for (var i = 0; i < ownerCount; i++)
-        {
-            var ownerId = request.DataDict[$"owners.{i}.ownerId"];
-            responseData.Add($"rankedStats.{i}.ownerId", ownerId);
-            responseData.Add($"rankedStats.{i}.ownerType", "1");
+    for (var i = 0; i < ownersCount; i++)
+    {
+        var ownerId = request[$"owners.{i}.ownerId"];
+        var ownerType = request[$"owners.{i}.ownerType"];
 
-            for (var j = 0; j < statCount; j++)
+        responseData.Add($"rankedStats.{i}.ownerId", ownerId);
+        responseData.Add($"rankedStats.{i}.ownerType", ownerType);
+        responseData.Add($"rankedStats.{i}.stats.[]", $"{keysCount}");
+
+        for (var j = 0; j < keysCount; j++)
             {
-                var statName = request.DataDict[$"keys.{j}"];
-                responseData.Add($"rankedStats.{i}.rankedStats.{j}.key", statName);
+                var key = request[$"keys.{j}"];
+                responseData.Add($"rankedStats.{i}.stats.{j}.key", key);
+                responseData.Add($"rankedStats.{i}.stats.{j}.value", "0"); 
+                responseData.Add($"rankedStats.{i}.stats.{j}.rank", "0"); 
             }
-        }
+     }
 
-        var packet = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
-        await _conn.SendPacket(packet);
-    }
+    var packet = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
+    await _conn.SendPacket(packet);
+}
 
     private async Task HandlePresenceSubscribe(Packet request)
     {
