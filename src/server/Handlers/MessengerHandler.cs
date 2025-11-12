@@ -23,11 +23,13 @@ public class MessengerHandler
 
         _handlers = new Dictionary<string, Func<Packet, Task>>
         {
+            
             ["AUTH"] = HandleAUTH,
             ["RGET"] = HandleRGET,
             ["PSET"] = AcknowledgeRequest,
             ["PADD"] = AcknowledgeRequest,
             ["RADD"] = AcknowledgeRequest
+                
         }.ToImmutableDictionary();
     }
 
