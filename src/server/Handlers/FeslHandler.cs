@@ -74,10 +74,10 @@ public class FeslHandler
             ["rank/GetStats"] = HandleGetStats,
             ["rank/GetTopNAndStats"] = HandleGetTopNAndStats,
             ["rank/GetRankedStats"] = HandleGetRankedStats,
-            ["rank/GetRankedStatsForOwners"] = HandleGetRankedStatsForOwners,
             ["rank/UpdateStats"] = HandleUpdateStats,
             ["xmsg/GetMessages"] = HandleGetMessages,
-
+            
+            ["rank/GetRankedStatsForOwners"] = AcknowledgeRequest,
             ["pres/SetPresenceStatus"] = AcknowledgeRequest,
             ["acct/NuGrantEntitlement"] = AcknowledgeRequest,
             ["acct/GetTelemetryToken"] = AcknowledgeRequest,
