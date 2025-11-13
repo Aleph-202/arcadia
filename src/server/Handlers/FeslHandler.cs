@@ -469,6 +469,7 @@ public class FeslHandler
 
     private async Task HandleGetPingSites(Packet request)
     {
+        _logger.LogInformation("HandleGetPingSites", request.ToString());
         var serverIp = _plasma!.FeslConnection!.LocalAddress;
         var responseData = new Dictionary<string, string>
         {
