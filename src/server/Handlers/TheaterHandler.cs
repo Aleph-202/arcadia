@@ -139,7 +139,7 @@ public class TheaterHandler
     private async Task HandleEGAM(Packet request)
     {
         if (_plasma is null) throw new NotImplementedException();
-
+        _logger.LogInformation("EGAM", request.ToString());
         var reqGid = request["GID"];
         var gid = string.IsNullOrWhiteSpace(reqGid) ? 0 : long.Parse(reqGid);
 
@@ -252,6 +252,7 @@ public class TheaterHandler
 
     private async Task HandleGDAT(Packet request)
     {
+        _logger.LogInformation("GDAT", request.ToString());
         var reqGid = request["GID"];
         var serverGid = string.IsNullOrWhiteSpace(reqGid) ? 0 : int.Parse(reqGid);
         var game = _sharedCache.GetGameByGid(_plasma!.PartitionId, serverGid);
@@ -293,6 +294,7 @@ public class TheaterHandler
 
     private async Task SendGDET(Packet request, GameServerListing game)
     {
+        _logger.LogInformation("GDET", request.ToString());
         var response = new Dictionary<string, string>
         {
             ["LID"] = $"{game.LID}",
@@ -352,6 +354,7 @@ public class TheaterHandler
 
     private async Task HandleLLST(Packet request)
     {
+        _logger.LogInformation("LLST", request.ToString());
         var lobbyList = new Dictionary<string, string>
         {
             ["TID"] = $"{request["TID"]}",
@@ -376,6 +379,7 @@ public class TheaterHandler
 
     public async Task HandleGLST(Packet request)
     {
+        _logger.LogInformation("GLST", request.ToString());
         var games = _sharedCache.GetPartitionServers(_plasma!.PartitionId).Where(x => x.CanJoin).ToList();
 
         var gameList = new Dictionary<string,string>
@@ -420,6 +424,7 @@ public class TheaterHandler
     // CreateGame
     private async Task HandleCGAM(Packet request)
     {
+        _logger.LogInformation("CGAM", request.ToString());
         if (_plasma is null) throw new NotImplementedException();
 
         var game = new GameServerListing()
