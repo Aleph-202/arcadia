@@ -179,7 +179,7 @@ public class FeslHandler
         await _conn.SendPacket(
             new(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, new()
             {
-                _logger.LogInformation("PlayNow: req", partitionId);
+                _logger.LogInformation("PlayNow: req", partitionId),
                 { "TXN", "Start" },
                 { "id.id", $"{pnowId}" },
                 { "id.partition", partitionId },
