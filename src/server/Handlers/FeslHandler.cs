@@ -179,7 +179,7 @@ public class FeslHandler
         await _conn.SendPacket(
             new(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, new()
             {
-                _logger.LogInformation("PlayNow: req");
+                _logger.LogInformation("PlayNow: req", partitionId);
                 { "TXN", "Start" },
                 { "id.id", $"{pnowId}" },
                 { "id.partition", partitionId },
@@ -197,7 +197,7 @@ public class FeslHandler
         var servers = _sharedCache.GetPartitionServers(partitionId).Where(x => x.CanJoin).ToArray();
         if (servers.Length > 0)
         {
-            _logger.LogInformation("PlayNow: Succ");
+            _logger.LogInformation("PlayNow: Succ", partitionId );
             pnowResult.Add("props.{}", "3");
             pnowResult.Add("props.{resultType}", PlayNowResultType.JOIN);
             pnowResult.Add("props.{avgFit}", "1.0");
