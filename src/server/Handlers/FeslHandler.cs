@@ -179,11 +179,11 @@ public class FeslHandler
         await _conn.SendPacket(
             new(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, new()
             {
-                _logger.LogInformation("PlayNow: req", partitionId),
                 { "TXN", "Start" },
                 { "id.id", $"{pnowId}" },
                 { "id.partition", partitionId },
             })
+            _logger.LogInformation("PlayNow: sent", partitionId)
         );
 
         var pnowResult = new Dictionary<string, string>
