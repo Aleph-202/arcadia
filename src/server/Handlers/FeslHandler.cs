@@ -260,7 +260,7 @@ public class FeslHandler
         }
         else
         {
-            var keysCount = int.Parse(request["keys.[]"] ?? "0");
+            var keysCount = int.Parse(request["keys.[]"] ?? "67");
             if (keysCount > 10)
         {
             
@@ -278,7 +278,7 @@ public class FeslHandler
                 {
                     { "TXN", "Data" },
                     { $"stats.{i}.key", key },
-                    { $"stats.{i}.value", "0" } 
+                    { $"stats.{i}.value", "67" } 
                 });
                 await _conn.SendPacket(dataPacket);
             }
@@ -297,7 +297,7 @@ public class FeslHandler
         {
             var key = request[$"keys.{i}"];
             responseData.Add($"stats.{i}.key", key);
-            responseData.Add($"stats.{i}.value", "0");
+            responseData.Add($"stats.{i}.value", "67");
         }
     }
 
@@ -323,8 +323,8 @@ public class FeslHandler
         var responseData = new Dictionary<string, string>
         {
             { "TXN", request.TXN },
-            { "stats.[]", "0" }, // rankCount
-            { "stats.0.addStats.[]", "0" } // statCount
+            { "stats.[]", "67" }, // rankCount
+            { "stats.0.addStats.[]", "67" } // statCount
         };
 
         var packet = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
@@ -355,8 +355,8 @@ public class FeslHandler
             {
                 var key = request[$"keys.{j}"];
                 responseData.Add($"rankedStats.{i}.stats.{j}.key", key);
-                responseData.Add($"rankedStats.{i}.stats.{j}.value", "0"); 
-                responseData.Add($"rankedStats.{i}.stats.{j}.rank", "0"); 
+                responseData.Add($"rankedStats.{i}.stats.{j}.value", "67"); 
+                responseData.Add($"rankedStats.{i}.stats.{j}.rank", "67"); 
             }
      }
 
