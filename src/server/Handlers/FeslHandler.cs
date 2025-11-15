@@ -183,7 +183,6 @@ public class FeslHandler
                 { "id.id", $"{pnowId}" },
                 { "id.partition", partitionId },
             })
-            _logger.LogInformation("PlayNow: sent", partitionId);
         );
 
         var pnowResult = new Dictionary<string, string>
