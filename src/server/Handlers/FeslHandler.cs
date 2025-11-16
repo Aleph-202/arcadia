@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Globalization;
 using Arcadia.EA;
 using Arcadia.EA.Constants;
 using Arcadia.EA.Ports;
@@ -7,6 +5,9 @@ using Arcadia.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NPTicket;
+using System.Collections.Immutable;
+using System.Globalization;
+using System.Net.Sockets;
 
 namespace Arcadia.Handlers;
 
@@ -175,7 +176,7 @@ public class FeslHandler
     private async Task HandlePlayNow(Packet request)
     {
         var pnowId = _sharedCounters.GetNextPnowId();
-
+        _logger.LogWarning("HandlePlayNow");
         await _conn.SendPacket(
             new(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, new()
             {
@@ -196,6 +197,7 @@ public class FeslHandler
         var servers = _sharedCache.GetPartitionServers(partitionId).Where(x => x.CanJoin).ToArray();
         if (servers.Length > 0)
         {
+            _logger.LogWarning("HandlePlayNow: found");
             pnowResult.Add("props.{}", "3");
             pnowResult.Add("props.{resultType}", PlayNowResultType.JOIN);
             pnowResult.Add("props.{avgFit}", "1.0");
@@ -209,6 +211,7 @@ public class FeslHandler
         }
         else
         {
+            _logger.LogWarning("HandlePlayNow: no server");
             pnowResult.Add("props.{}", "1");
             pnowResult.Add("props.{resultType}", PlayNowResultType.NOSERVER);
         }
@@ -309,8 +312,8 @@ public class FeslHandler
         var responseData = new Dictionary<string, string>
         {
             { "TXN", request.TXN },
-            { "stats.[]", "0" }, // rankCount
-            { "stats.0.addStats.[]", "0" } // statCount
+            { "stats.[]", "1" }, // rankCount
+            { "stats.0.addStats.[]", "1" } // statCount
         };
 
         var packet = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
@@ -319,8 +322,8 @@ public class FeslHandler
 
     private async Task HandleGetRankedStatsForOwners(Packet request)
     {
-        var statCount = int.Parse(request.DataDict.GetValueOrDefault("keys.[]", "0"));
-        var ownerCount = int.Parse(request.DataDict.GetValueOrDefault("owners.[]", "0"));
+        var statCount = int.Parse(request.DataDict.GetValueOrDefault("keys.[]", "1"));
+        var ownerCount = int.Parse(request.DataDict.GetValueOrDefault("owners.[]", "1"));
 
         var responseData = new Dictionary<string, string>
         {
