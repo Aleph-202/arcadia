@@ -378,6 +378,8 @@ public class TheaterHandler
     {
         var games = _sharedCache.GetPartitionServers(_plasma!.PartitionId).Where(x => x.CanJoin).ToList();
 
+        _logger.LogInformation("Client requested ServerList: {TID}", request["TID"]);
+
         var gameList = new Dictionary<string,string>
         {
             ["TID"] = request["TID"],
