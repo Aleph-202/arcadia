@@ -244,38 +244,53 @@ public class FeslHandler
 
     private async Task HandleGetStats(Packet request)
     {
-        // TODO: Implement multi-packet responses 
-        var responseData = new Dictionary<string, string>
+        var keysCount = 0;
+        if (!int.TryParse(request["keys.[]"], out keysCount) || keysCount < 0)
+        {
+            keysCount = 0;
+        }
+
+        if (keysCount == 0)
+        {
+            var emptyResponse = new Dictionary<string, string>
         {
             { "TXN", "GetStats" },
+            { "stats.[]", "0" }
+        };
+            await _conn.SendPacket(new Packet("rank", FeslTransmissionType.SinglePacketResponse, request.Id, emptyResponse));
+            return;
+        }
+
+        var startPacket = new Dictionary<string, string>
+    {
+        { "TXN", "Start" },
+        { "totalSize", $"{keysCount}" }
+    };
+        await _conn.SendPacket(new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, startPacket));
+
+        for (var i = 0; i < keysCount; i++)
+        {
+            var key = request[$"keys.{i}"] ?? string.Empty;
+            
+            var value = key == "pm_minplayers" ? "1.0" : "1";
+
+            var data = new Dictionary<string, string>
+        {
+            { "TXN", "Data" },
+            { $"stats.{i}.key", key },
+            { $"stats.{i}.value", value }
         };
 
-        // Override BF1943 minimum player count requirement
-        if (request["keys.1"] == "pm_minplayers")
-        {
-            responseData.Add("stats.[]", "1");
-            responseData.Add("stats.0.key", "pm_minplayers");
-            responseData.Add("stats.0.value", "1.0");
-        }
-        else
-        {
-            responseData.Add("stats.[]", "0");
+            await _conn.SendPacket(new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, data));
         }
 
-        // TODO: Add some stats
-        // var keysStr = request.DataDict["keys.[]"] as string ?? string.Empty;
-        // var reqKeys = int.Parse(keysStr, CultureInfo.InvariantCulture);
-        // for (var i = 0; i < reqKeys; i++)
-        // {
-        //     var key = request.DataDict[$"keys.{i}"];
-
-        //     responseData.Add($"stats.{i}.key", key);
-        //     responseData.Add($"stats.{i}.value", 0.0);
-        // }
-
-        var packet = new Packet("rank", FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
-        await _conn.SendPacket(packet);
+        var endPacket = new Dictionary<string, string>
+    {
+        { "TXN", "End" }
+    };
+        await _conn.SendPacket(new Packet("rank", FeslTransmissionType.MultiPacketResponse, request.Id, endPacket));
     }
+
 
     private async Task HandleGetRankedStats(Packet request)
     {
