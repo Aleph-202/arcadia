@@ -345,12 +345,29 @@ public class FeslHandler
             {
                 var statName = request.DataDict[$"keys.{j}"];
                 responseData.Add($"rankedStats.{i}.rankedStats.{j}.key", statName);
+                string value = statName switch
+                {
+                    "TR" => "100",
+                    "TP" => "50",
+                    "TC" => "10",
+                    _ => "0"
+                };
+                responseData.Add($"rankedStats.{i}.rankedStats.{j}.value", value);
             }
         }
 
         var packet = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, responseData);
         await _conn.SendPacket(packet);
+
+        var endData = new Dictionary<string, string>
+        {
+            { "TXN", "END" },
+            { "Id", request.Id.ToString() }
+        };
+        var endPacket = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, endData);
+        await _conn.SendPacket(endPacket);
     }
+
 
     private async Task HandlePresenceSubscribe(Packet request)
     {
