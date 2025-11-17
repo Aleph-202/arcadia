@@ -341,18 +341,13 @@ public class FeslHandler
             responseData.Add($"rankedStats.{i}.ownerId", ownerId);
             responseData.Add($"rankedStats.{i}.ownerType", "1");
 
+            var statsData = await GetStatsData(ownerId, statCount, request);
+
             for (var j = 0; j < statCount; j++)
             {
                 var statName = request.DataDict[$"keys.{j}"];
                 responseData.Add($"rankedStats.{i}.rankedStats.{j}.key", statName);
-                string value = statName switch
-                {
-                    "TR" => "100",
-                    "TP" => "50",
-                    "TC" => "10",
-                    _ => "0"
-                };
-                responseData.Add($"rankedStats.{i}.rankedStats.{j}.value", value);
+                responseData.Add($"rankedStats.{i}.rankedStats.{j}.value", statsData[statName]);
             }
         }
 
@@ -366,6 +361,24 @@ public class FeslHandler
         };
         var endPacket = new Packet(request.Type, FeslTransmissionType.SinglePacketResponse, request.Id, endData);
         await _conn.SendPacket(endPacket);
+    }
+
+    private async Task<Dictionary<string, string>> GetStatsData(string ownerId, int statCount, Packet request)
+    {
+        var data = new Dictionary<string, string>();
+        for (var j = 0; j < statCount; j++)
+        {
+            var statName = request.DataDict[$"keys.{j}"];
+            string value = statName switch
+            {
+                "TR" => "100",
+                "TP" => "50",
+                "TC" => "10",
+                _ => "0"
+            };
+            data[statName] = value;
+        }
+        return data;
     }
 
 
