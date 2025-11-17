@@ -132,16 +132,19 @@ public class FeslHandler
     {
         var reqTxn = packet.TXN;
         var packetType = packet.Type;
+        _logger.LogWarning("Received packet: Type={packetType}, TXN={reqTxn}, Id={packet.Id}", packetType, reqTxn, packet.Id);  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
+    
         _handlers.TryGetValue($"{packetType}/{reqTxn}", out var handler);
-
+    
         if (handler is null)
         {
             _logger.LogWarning("Unknown packet type: {type}, TXN: {txn}", packet.Type, reqTxn);
             return;
         }
-
+    
         await handler(packet);
     }
+
 
     private async Task HandleHello(Packet request)
     {
