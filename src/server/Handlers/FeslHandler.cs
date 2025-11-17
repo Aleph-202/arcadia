@@ -56,7 +56,7 @@ public class FeslHandler
             ["fsys/Ping"] = HandlePing,
             ["fsys/GetPingSites"] = HandleGetPingSites,
             ["fsys/Goodbye"] = HandleGoodbye,
-            ["pnow/PlayNow"] = HandlePlayNow,
+            ["pnow/Start"] = HandlePlayNow,
             ["acct/NuPS3Login"] = HandleNuPs3Login,
             ["acct/PS3Login"] = HandlePs3Login,
             ["acct/NuLogin"] = HandleNuLogin,
