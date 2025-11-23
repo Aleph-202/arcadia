@@ -115,7 +115,7 @@ public sealed class Database : IDisposable
                 ["N"] = section["Name"],
                 ["I"] = section["IP"],
                 ["INT-IP"] = section["IP"],
-                ["J"] = "O",
+                ["J"] = "1",
                 ["HU"] = $"{uid}",
                 ["B-U-FlagCapture"] = "3",
                 ["V"] = "6.0",
